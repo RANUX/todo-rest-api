@@ -1,0 +1,12 @@
+version: "1"
+packages:
+  - name: "postgres"
+    path: "internal/app/postgres"
+    queries: "./internal/app/postgres/queries/"
+    schema: "./internal/app/postgres/migrations/"
+    engine: "postgresql"
+    emit_json_tags: true
+    emit_prepared_queries: true
+    emit_interface: false
+    emit_exact_table_names: false
+    emit_empty_slices: false
