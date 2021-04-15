@@ -28,8 +28,8 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getAllTodosStmt, err = db.PrepareContext(ctx, getAllTodos); err != nil {
 		return nil, fmt.Errorf("error preparing query GetAllTodos: %w", err)
 	}
-	if q.getTodoStmt, err = db.PrepareContext(ctx, getTodo); err != nil {
-		return nil, fmt.Errorf("error preparing query GetTodo: %w", err)
+	if q.getTodoByIdStmt, err = db.PrepareContext(ctx, getTodoById); err != nil {
+		return nil, fmt.Errorf("error preparing query GetTodoById: %w", err)
 	}
 	return &q, nil
 }
@@ -46,9 +46,9 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing getAllTodosStmt: %w", cerr)
 		}
 	}
-	if q.getTodoStmt != nil {
-		if cerr := q.getTodoStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing getTodoStmt: %w", cerr)
+	if q.getTodoByIdStmt != nil {
+		if cerr := q.getTodoByIdStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getTodoByIdStmt: %w", cerr)
 		}
 	}
 	return err
@@ -92,7 +92,7 @@ type Queries struct {
 	tx              *sql.Tx
 	createTodoStmt  *sql.Stmt
 	getAllTodosStmt *sql.Stmt
-	getTodoStmt     *sql.Stmt
+	getTodoByIdStmt *sql.Stmt
 }
 
 func (q *Queries) WithTx(tx *sql.Tx) *Queries {
@@ -101,6 +101,6 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		tx:              tx,
 		createTodoStmt:  q.createTodoStmt,
 		getAllTodosStmt: q.getAllTodosStmt,
-		getTodoStmt:     q.getTodoStmt,
+		getTodoByIdStmt: q.getTodoByIdStmt,
 	}
 }

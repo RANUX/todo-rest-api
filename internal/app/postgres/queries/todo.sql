@@ -5,6 +5,6 @@ SELECT * FROM "todos";
 INSERT INTO "todos" (name, completed)
 VALUES ($1, $2) RETURNING *;
 
--- name: GetTodo :one
+-- name: GetTodoById :one
 SELECT * FROM "todos" WHERE id = $1 LIMIT 1;
 

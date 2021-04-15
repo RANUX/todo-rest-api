@@ -52,12 +52,12 @@ func (q *Queries) GetAllTodos(ctx context.Context) ([]Todo, error) {
 	return items, nil
 }
 
-const getTodo = `-- name: GetTodo :one
+const getTodoById = `-- name: GetTodoById :one
 SELECT id, name, completed FROM "todos" WHERE id = $1 LIMIT 1
 `
 
-func (q *Queries) GetTodo(ctx context.Context, id int64) (Todo, error) {
-	row := q.queryRow(ctx, q.getTodoStmt, getTodo, id)
+func (q *Queries) GetTodoById(ctx context.Context, id int64) (Todo, error) {
+	row := q.queryRow(ctx, q.getTodoByIdStmt, getTodoById, id)
 	var i Todo
 	err := row.Scan(&i.ID, &i.Name, &i.Completed)
 	return i, err
