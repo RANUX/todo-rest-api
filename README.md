@@ -9,3 +9,6 @@ brew install sqlc
 
 ```
 
+
+
+http://localhost:8080/v1/todos

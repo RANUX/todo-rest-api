@@ -1,3 +1,2 @@
 bind_addr = "8080"
-log_level = "debug"
 database_url = "host=localhost dbname=todos_db user=postgres password=39dkj29d sslmode=disable"

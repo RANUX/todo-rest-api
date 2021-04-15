@@ -1,6 +1,7 @@
 package apiserver
 
 import (
+	"database/sql"
 	"strconv"
 
 	"github.com/gofiber/fiber"
@@ -27,87 +28,87 @@ func mapTodo(todo postgres.Todo) interface{} {
 	}
 }
 
-// func (h *Handlers) UpdateTodo(ctx *fiber.Ctx) {
-// 	type request struct {
-// 		Name      *string `json:"name"`
-// 		Completed *bool   `json:"completed"`
-// 	}
+func (h *Handlers) UpdateTodo(ctx *fiber.Ctx) {
+	type request struct {
+		Name      *string `json:"name"`
+		Completed *bool   `json:"completed"`
+	}
 
-// 	paramsId := ctx.Params("id")
-// 	id, err := strconv.Atoi(paramsId)
-// 	if err != nil {
-// 		ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-// 			"error": "cannot parse id",
-// 		})
-// 		return
-// 	}
+	paramsId := ctx.Params("id")
+	id, err := strconv.Atoi(paramsId)
+	if err != nil {
+		ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "cannot parse id",
+		})
+		return
+	}
 
-// 	var body request
-// 	err = ctx.BodyParser(&body)
-// 	if err != nil {
-// 		ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-// 			"error": "cannot parse body",
-// 		})
-// 		return
-// 	}
+	var body request
+	err = ctx.BodyParser(&body)
+	if err != nil {
+		ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "cannot parse body",
+		})
+		return
+	}
 
-// 	todo, err := h.Repo.GetTodoById(ctx.Context(), int64(id))
-// 	if err != nil {
-// 		ctx.Status(fiber.StatusNotFound)
-// 		return
-// 	}
+	todo, err := h.Repo.GetTodoById(ctx.Context(), int64(id))
+	if err != nil {
+		ctx.Status(fiber.StatusNotFound)
+		return
+	}
 
-// 	if body.Name != nil {
-// 		todo.Name = *body.Name
-// 	}
+	if body.Name != nil {
+		todo.Name = *body.Name
+	}
 
-// 	if body.Completed != nil {
-// 		todo.Completed = sql.NullBool{
-// 			Bool:  *body.Completed,
-// 			Valid: true,
-// 		}
-// 	}
+	if body.Completed != nil {
+		todo.Completed = sql.NullBool{
+			Bool:  *body.Completed,
+			Valid: true,
+		}
+	}
 
-// 	todo, err = h.Repo.UpdateTodo(ctx.Context(), postgres.UpdateTodoParams{
-// 		ID:        int64(id),
-// 		Name:      todo.Name,
-// 		Completed: todo.Completed,
-// 	})
-// 	if err != nil {
-// 		ctx.SendStatus(fiber.StatusNotFound)
-// 		return
-// 	}
+	todo, err = h.Repo.UpdateTodo(ctx.Context(), postgres.UpdateTodoParams{
+		ID:        int64(id),
+		Name:      todo.Name,
+		Completed: todo.Completed,
+	})
+	if err != nil {
+		ctx.SendStatus(fiber.StatusNotFound)
+		return
+	}
 
-// 	if err := ctx.Status(fiber.StatusOK).JSON(mapTodo(todo)); err != nil {
-// 		ctx.Status(fiber.StatusInternalServerError).Send(err.Error())
-// 		return
-// 	}
-// }
+	if err := ctx.Status(fiber.StatusOK).JSON(mapTodo(todo)); err != nil {
+		ctx.Status(fiber.StatusInternalServerError).Send(err.Error())
+		return
+	}
+}
 
-// func (h *Handlers) DeleteTodo(ctx *fiber.Ctx) {
-// 	paramsId := ctx.Params("id")
-// 	id, err := strconv.Atoi(paramsId)
-// 	if err != nil {
-// 		ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-// 			"error": "cannot parse id",
-// 		})
-// 		return
-// 	}
+func (h *Handlers) DeleteTodo(ctx *fiber.Ctx) {
+	paramsId := ctx.Params("id")
+	id, err := strconv.Atoi(paramsId)
+	if err != nil {
+		ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "cannot parse id",
+		})
+		return
+	}
 
-// 	_, err = h.Repo.GetTodoById(ctx.Context(), int64(id))
-// 	if err != nil {
-// 		ctx.Status(fiber.StatusNotFound)
-// 		return
-// 	}
+	_, err = h.Repo.GetTodoById(ctx.Context(), int64(id))
+	if err != nil {
+		ctx.Status(fiber.StatusNotFound)
+		return
+	}
 
-// 	err = h.Repo.DeleteTodoById(ctx.Context(), int64(id))
-// 	if err != nil {
-// 		ctx.SendStatus(fiber.StatusNotFound)
-// 		return
-// 	}
+	err = h.Repo.DeleteTodoById(ctx.Context(), int64(id))
+	if err != nil {
+		ctx.SendStatus(fiber.StatusNotFound)
+		return
+	}
 
-// 	ctx.SendStatus(fiber.StatusNoContent)
-// }
+	ctx.SendStatus(fiber.StatusNoContent)
+}
 
 func (h *Handlers) GetTodo(ctx *fiber.Ctx) {
 	paramsId := ctx.Params("id")
