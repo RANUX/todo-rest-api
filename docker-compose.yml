@@ -1,7 +1,7 @@
 version: '3.7'
 
 services:
-  postgres_todos:
+  postgres:
     image: postgres:12.2-alpine
     env_file: postgres.env
     expose:
@@ -11,10 +11,10 @@ services:
     volumes:
       - pgdata_todos:/var/lib/postgresql/data
 
-  adminer_todos:
+  adminer:
     image: dehy/adminer
     links:
-      - postgres_todos
+      - postgres
     ports:
       - "8888:80"
 

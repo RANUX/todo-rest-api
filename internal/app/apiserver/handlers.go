@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"strconv"
 
-	"github.com/gofiber/fiber"
+	"github.com/gofiber/fiber/v2"
 	"github.com/ranux/todo-rest-api/internal/app/postgres"
 )
 
@@ -28,7 +28,7 @@ func mapTodo(todo postgres.Todo) interface{} {
 	}
 }
 
-func (h *Handlers) UpdateTodo(ctx *fiber.Ctx) {
+func (h *Handlers) UpdateTodo(ctx *fiber.Ctx) error {
 	type request struct {
 		Name      *string `json:"name"`
 		Completed *bool   `json:"completed"`
@@ -40,7 +40,7 @@ func (h *Handlers) UpdateTodo(ctx *fiber.Ctx) {
 		ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "cannot parse id",
 		})
-		return
+		return nil
 	}
 
 	var body request
@@ -49,13 +49,13 @@ func (h *Handlers) UpdateTodo(ctx *fiber.Ctx) {
 		ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "cannot parse body",
 		})
-		return
+		return nil
 	}
 
 	todo, err := h.Repo.GetTodoById(ctx.Context(), int64(id))
 	if err != nil {
 		ctx.Status(fiber.StatusNotFound)
-		return
+		return nil
 	}
 
 	if body.Name != nil {
@@ -74,67 +74,72 @@ func (h *Handlers) UpdateTodo(ctx *fiber.Ctx) {
 		Name:      todo.Name,
 		Completed: todo.Completed,
 	})
+
 	if err != nil {
 		ctx.SendStatus(fiber.StatusNotFound)
-		return
+		return nil
 	}
 
 	if err := ctx.Status(fiber.StatusOK).JSON(mapTodo(todo)); err != nil {
-		ctx.Status(fiber.StatusInternalServerError).Send(err.Error())
-		return
+		fiber.NewError(fiber.StatusInternalServerError, err.Error())
+		return nil
 	}
+	return nil
 }
 
-func (h *Handlers) DeleteTodo(ctx *fiber.Ctx) {
+func (h *Handlers) DeleteTodo(ctx *fiber.Ctx) error {
 	paramsId := ctx.Params("id")
 	id, err := strconv.Atoi(paramsId)
 	if err != nil {
 		ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "cannot parse id",
 		})
-		return
+		return nil
 	}
 
 	_, err = h.Repo.GetTodoById(ctx.Context(), int64(id))
 	if err != nil {
 		ctx.Status(fiber.StatusNotFound)
-		return
+		return nil
 	}
 
 	err = h.Repo.DeleteTodoById(ctx.Context(), int64(id))
 	if err != nil {
 		ctx.SendStatus(fiber.StatusNotFound)
-		return
+		return nil
 	}
 
 	ctx.SendStatus(fiber.StatusNoContent)
+	return nil
 }
 
-func (h *Handlers) GetTodo(ctx *fiber.Ctx) {
+func (h *Handlers) GetTodo(ctx *fiber.Ctx) error {
 	paramsId := ctx.Params("id")
 	id, err := strconv.Atoi(paramsId)
 	if err != nil {
 		ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "cannot parse id",
 		})
-		return
+		return nil
 	}
 
 	todo, err := h.Repo.GetTodoById(ctx.Context(), int64(id))
 	if err != nil {
 		ctx.Status(fiber.StatusNotFound)
-		return
+		return nil
 	}
 
 	if err := ctx.Status(fiber.StatusOK).JSON(mapTodo(todo)); err != nil {
-		ctx.Status(fiber.StatusInternalServerError).Send(err.Error())
-		return
+		fiber.NewError(fiber.StatusInternalServerError, err.Error())
+		return nil
 	}
+	return nil
 }
 
-func (h *Handlers) CreateTodo(ctx *fiber.Ctx) {
+func (h *Handlers) CreateTodo(ctx *fiber.Ctx) error {
 	type request struct {
-		Name string `json:"name"`
+		Name      string `json:"name"`
+		Completed bool   `json:"completed"`
 	}
 
 	var body request
@@ -144,36 +149,41 @@ func (h *Handlers) CreateTodo(ctx *fiber.Ctx) {
 		ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "cannot parse json",
 		})
-		return
+		return nil
 	}
 
 	if len(body.Name) <= 2 {
 		ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "name is not long enough",
 		})
-		return
+		return nil
 	}
 
 	todo, err := h.Repo.CreateTodo(ctx.Context(), postgres.CreateTodoParams{
 		Name: body.Name,
+		Completed: sql.NullBool{
+			Bool:  body.Completed,
+			Valid: true,
+		},
 	})
 
 	if err != nil {
-		ctx.Status(fiber.StatusInternalServerError).Send(err.Error())
-		return
+		fiber.NewError(fiber.StatusInternalServerError, err.Error())
+		return nil
 	}
 
 	if err := ctx.Status(fiber.StatusCreated).JSON(mapTodo(todo)); err != nil {
-		ctx.Status(fiber.StatusInternalServerError).Send(err.Error())
-		return
+		fiber.NewError(fiber.StatusInternalServerError, err.Error())
+		return nil
 	}
+	return nil
 }
 
-func (h *Handlers) GetTodos(ctx *fiber.Ctx) {
+func (h *Handlers) GetTodos(ctx *fiber.Ctx) error {
 	todos, err := h.Repo.GetAllTodos(ctx.Context())
 	if err != nil {
-		ctx.Status(fiber.StatusInternalServerError).Send(err.Error())
-		return
+		fiber.NewError(fiber.StatusInternalServerError, err.Error())
+		return nil
 	}
 
 	result := make([]interface{}, len(todos))
@@ -182,7 +192,8 @@ func (h *Handlers) GetTodos(ctx *fiber.Ctx) {
 	}
 
 	if err := ctx.Status(fiber.StatusOK).JSON(result); err != nil {
-		ctx.Status(fiber.StatusInternalServerError).Send(err.Error())
-		return
+		fiber.NewError(fiber.StatusInternalServerError, err.Error())
+		return nil
 	}
+	return nil
 }

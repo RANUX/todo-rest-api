@@ -2,7 +2,6 @@
 build:
 		go build -v ./cmd/apiserver
 
-
 .PHONY: migrate
 migrate:
 	migrate -source file://internal/app/postgres/migrations \

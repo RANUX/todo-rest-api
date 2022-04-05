@@ -3,8 +3,9 @@ package apiserver
 import (
 	"database/sql"
 
-	"github.com/gofiber/fiber"
-	"github.com/gofiber/fiber/middleware"
+	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/gofiber/fiber/v2/middleware/recover"
 	_ "github.com/lib/pq" // ...
 	"github.com/ranux/todo-rest-api/internal/app/postgres"
 )
@@ -24,8 +25,8 @@ func Start(config *Config) error {
 	repo := postgres.NewRepo(db)
 
 	app := fiber.New()
-	app.Use(middleware.Logger())
-	app.Use(middleware.Recover())
+	app.Use(logger.New())
+	app.Use(recover.New())
 
 	handlers := NewHandlers(repo)
 
@@ -35,7 +36,7 @@ func Start(config *Config) error {
 }
 
 func SetupApiV1(app *fiber.App, handlers *Handlers) {
-	v1 := app.Group("/v1")
+	v1 := app.Group("/api/v1")
 
 	SetupTodosRoutes(v1, handlers)
 }
@@ -43,10 +44,10 @@ func SetupApiV1(app *fiber.App, handlers *Handlers) {
 func SetupTodosRoutes(grp fiber.Router, handlers *Handlers) {
 	todosRoutes := grp.Group("/todos")
 	todosRoutes.Get("/", handlers.GetTodos)
-	todosRoutes.Post("/", handlers.CreateTodo)
+	todosRoutes.Post("/create/", handlers.CreateTodo)
 	todosRoutes.Get("/:id", handlers.GetTodo)
-	// todosRoutes.Delete("/:id", handlers.DeleteTodo)
-	// todosRoutes.Patch("/:id", handlers.UpdateTodo)
+	todosRoutes.Delete("/delete/:id", handlers.DeleteTodo)
+	todosRoutes.Patch("/update/:id", handlers.UpdateTodo)
 }
 
 func newDB(dbURL string) (*sql.DB, error) {
